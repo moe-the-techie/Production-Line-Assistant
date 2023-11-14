@@ -63,52 +63,35 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, product_count, current_w
     :return:
     """
 
-    # Prices are specific for LSD per 6 meters and the change every 3 months approximately
-    outer_frame_price = 7
-    inner_frame_price = 5.5
-    louver_price = 1.5
-    pipe_price = 1.2
-
-    # Prices per unit
-    sheet_price = 220
-    hanging_clamp_price = 0.5
-    corner_price = 0.5
+    # Prices are specific for LSD per 1 meter and the change every 3 months approximately
+    outer_frame_price = 6.6
+    inner_frame_price = 1.2
+    louver_price = 4.8
+    pipe_price = 1.6
+    space_bar_price = 1.8
 
     # Calculations for: outer & inner frames, space bar, and pipe
 
-    outer_frame_thickness = 4.4
-    inner_frame_thickness = 1.2
     n_inner_frames = n_slots - 1
-    space_bar_size = gap_size + 16
+    inner_frame_thickness = 1.2
+    outer_frame_thickness = 4.4
 
-    pipe_length = gap_size + 16 * n_slots + inner_frame_thickness * n_inner_frames + 8.8
+    end_cap_size = (20 + 16) * n_slots + n_inner_frames * inner_frame_thickness + 2 * outer_frame_thickness
+    space_bar_size = (lsd_length / 350) * end_cap_size - 1
 
-    n_pipes = int(round((lsd_length - 200)) / 300) + 1
-    n_space_bars = n_slots * n_pipes
+    pipe_size = (lsd_length / 350) * end_cap_size
+    outer_frame_size = (lsd_length + end_cap_size) * 2 + 380
+    inner_frame_size = n_inner_frames * lsd_length
 
-    pipe_size = pipe_length * n_pipes
-
-    end_cap_size = 2 * pipe_size
-
-    outer_frame_size = lsd_length * 2 + 10 + 380 + end_cap_size
-
-    inner_frame_size = lsd_length * n_inner_frames
-
-    n_louvers = n_dampers = n_hanging_clamps = n_slots * 2
-
-    louver_size = n_louvers * lsd_length
-
-    # Calculate the percentage of aluminum sheet used for the dampers
-    sheet_percentage_used = (lsd_length + 10) * space_bar_size * n_dampers / SHEET_SIZE
+    louver_size = n_slots * 2 * lsd_length
 
     powder_weight = 0.0001333333333 * lsd_length
 
-    # Cost calculations
+    # # Cost calculations
 
-    material_cost = (outer_frame_size * outer_frame_price + inner_frame_size * inner_frame_price +
-                     louver_size * louver_price + pipe_size * pipe_price + sheet_percentage_used *
-                     sheet_price + corner_price * N_CORNERS + n_hanging_clamps * hanging_clamp_price + powder_weight
-                     * POWDER_PRICE_PER_KG) / 1000
+    material_cost = (((space_bar_size * space_bar_price) + (inner_frame_size * inner_frame_price) +
+                     (outer_frame_size * outer_frame_price) + (louver_size * louver_price) +
+                     (pipe_size * pipe_price)) / 1000)
 
     labor_cost = material_cost * 0.3375
 
@@ -134,7 +117,7 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, product_count, current_w
     invoice_sheet.cell(row=31, column=16).value = str(discount) + "%"
 
     invoice_index = product_count + 18
-    report_index = product_count + 1
+    report_index = product_count + 2
 
     if product_count > 13:
         print("Sheet full, can't add product, saving file & terminating program.")
@@ -156,17 +139,19 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, product_count, current_w
     report_sheet.cell(row=report_index, column=2).value = str(round(total_cost, 2)) + "SAR"
     report_sheet.cell(row=report_index, column=3).value = str(round(material_cost, 2)) + "SAR"
     report_sheet.cell(row=report_index, column=4).value = str(round(labor_cost, 2)) + "SAR"
-    report_sheet.cell(row=report_index, column=5).value = str(overhead_cost) + "SAR"
+    report_sheet.cell(row=report_index, column=5).value = str(round(overhead_cost)) + "SAR"
     report_sheet.cell(row=report_index, column=6).value = str(outer_frame_size) + "mm"
-    report_sheet.cell(row=report_index, column=7).value = str(inner_frame_size) + "mm"
-    report_sheet.cell(row=report_index, column=8).value = str(louver_size) + "mm"
-    report_sheet.cell(row=report_index, column=9).value = str(n_pipes) + " pipe"
-    report_sheet.cell(row=report_index, column=10).value = str(pipe_size) + "mm"
-    report_sheet.cell(row=report_index, column=11).value = str(n_space_bars) + " bars"
-    report_sheet.cell(row=report_index, column=12).value = str(space_bar_size) + "mm"
-    report_sheet.cell(row=report_index, column=13).value = str(end_cap_size) + "mm"
-    report_sheet.cell(row=report_index, column=14).value = str(round(sheet_percentage_used, 2)) + "%"
-    report_sheet.cell(row=report_index, column=15).value = str(round(powder_weight, 2)) + "kg"
+    report_sheet.cell(row=report_index, column=7).value = str(outer_frame_price * outer_frame_size) + "SAR"
+    report_sheet.cell(row=report_index, column=8).value = str(inner_frame_size) + "mm"
+    report_sheet.cell(row=report_index, column=9).value = str(inner_frame_price * inner_frame_size) + "SAR"
+    report_sheet.cell(row=report_index, column=10).value = str(louver_size) + "mm"
+    report_sheet.cell(row=report_index, column=11).value = str(louver_price * louver_size) + "mm"
+    report_sheet.cell(row=report_index, column=12).value = str(pipe_size) + "mm"
+    report_sheet.cell(row=report_index, column=13).value = str(pipe_price * pipe_size) + "SAR"
+    report_sheet.cell(row=report_index, column=14).value = str(space_bar_size) + "mm"
+    report_sheet.cell(row=report_index, column=15).value = str(space_bar_price * space_bar_size) + "SAR"
+    report_sheet.cell(row=report_index, column=16).value = str(round(powder_weight, 2)) + "kg"
+    report_sheet.cell(row=report_index, column=17).value = str(round(powder_weight, 2) * POWDER_PRICE_PER_KG) + "SAR"
 
     try:
         if (input("Product Added.\nDo you wish to add another product? (y: yes, anything else: exit): ")
