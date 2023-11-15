@@ -1,7 +1,4 @@
-# This file will have the functions needed to calculate the costs for each product/product type
-# I'm thinking of a method for each product where it returns a formatted string that shoinvoice_sheet all the costs
-# We will also place the constant values in here and ensure we can't and won't use them elsewhere
-# We'll also need functions to modify the certain attributes of each function and update their values
+# TODO: Add the ability to enter the quantity of each product that applies into the invoice and material report.
 
 import openpyxl
 
@@ -9,7 +6,7 @@ PRODUCT_CODES = {
     "Linear Slot Diffuser at 45Deg Angle": "LSD45^"
 }
 N_CORNERS = 4
-POWDER_PRICE_PER_KG = 15
+POWDER_PRICE_PER_KG = 20
 SHEET_SIZE = 2440 * 1220
 global discount
 
@@ -38,7 +35,7 @@ def add_product(code, discount_inputted, product_count=1, current_workbooks=None
             if n_slots <= 0 or gap_size <= 0 or lsd_length <= 0:
                 raise ValueError
 
-            linear_slot_diffuser(n_slots, gap_size, lsd_length, product_count,current_workbooks)
+            linear_slot_diffuser(n_slots, gap_size, lsd_length, product_count, current_workbooks)
 
     except ValueError:
 
@@ -87,15 +84,17 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, product_count, current_w
 
     powder_weight = 0.0001333333333 * lsd_length
 
-    # # Cost calculations
+    powder_time = ((90 / (6000 * 12 / lsd_length)) + (90 / (6000 * 36 / lsd_length)) + 1) * 2
+
+    # Cost calculations
 
     material_cost = (((space_bar_size * space_bar_price) + (inner_frame_size * inner_frame_price) +
                      (outer_frame_size * outer_frame_price) + (louver_size * louver_price) +
                      (pipe_size * pipe_price)) / 1000)
 
-    labor_cost = material_cost * 0.3375
+    labor_cost = material_cost * 0.4 + powder_time
 
-    overhead_cost = labor_cost * 1.5
+    overhead_cost = labor_cost * 0.65
 
     total_cost = labor_cost + material_cost + overhead_cost
 
