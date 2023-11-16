@@ -10,11 +10,13 @@ def main():
             print(product_name + " --> " + products.PRODUCT_CODES[product_name])
 
         product = input("\nEnter Product Code: ")
+        quantity = int(input("Enter quantity: "))
+        discount = float(input("Enter discount percentage (number only e.g. 15): "))
 
         if product not in products.PRODUCT_CODES.values():
             raise ValueError
 
-        products.add_product(product, float(input("Enter discount percentage (number only e.g. 15): ")))
+        products.add_product(product, discount, quantity)
 
     except ValueError:
         print("Invalid value entered\nProcess terminated.")

@@ -1,5 +1,3 @@
-# TODO: Add the ability to enter the quantity of each product that applies into the invoice and material report.
-
 import openpyxl
 
 PRODUCT_CODES = {
@@ -11,11 +9,12 @@ SHEET_SIZE = 2440 * 1220
 global discount
 
 
-def add_product(code, discount_inputted, product_count=1, current_workbooks=None):
+def add_product(code, discount_inputted, quantity=1,  product_count=1, current_workbooks=None):
     """
     Adds a product to the current workbook by picking the right method for the code entered.
     :param discount_inputted: a float of the number part of the discount percentage to be applied to all products
     :param code: string representing product code
+    :param quantity: integer representing the quantity of LSDs required
     :param product_count: an integer representing the number of products entered so far
     :param current_workbooks: a tuple containing two openpyxl workbooks each representing a report file to be saved
     :return:
@@ -35,7 +34,7 @@ def add_product(code, discount_inputted, product_count=1, current_workbooks=None
             if n_slots <= 0 or gap_size <= 0 or lsd_length <= 0:
                 raise ValueError
 
-            linear_slot_diffuser(n_slots, gap_size, lsd_length, product_count, current_workbooks)
+            linear_slot_diffuser(n_slots, gap_size, lsd_length, quantity, product_count, current_workbooks)
 
     except ValueError:
 
@@ -49,25 +48,26 @@ def add_product(code, discount_inputted, product_count=1, current_workbooks=None
         exit(1)
 
 
-def linear_slot_diffuser(n_slots, gap_size, lsd_length, product_count, current_workbooks):
+def linear_slot_diffuser(n_slots, gap_size, lsd_length, quantity, product_count, current_workbooks):
     """
     Calculates the costs of production for the Linear Slot Diffuser and exports it into an Excel file.
     :param n_slots: integer representing the number of slots
     :param gap_size: float representing the size of the gap in millimeters
     :param lsd_length: float representing the length of the linear slot diffuser in millimeters
+    :param quantity: integer representing the quantity of LSDs required
     :param current_workbooks: a tuple containing two openpyxl workbooks each representing a report file to be saved
     :param product_count: an integer representing the number of products entered so far
     :return:
     """
 
-    # Prices are specific for LSD per 1 meter and the change every 3 months approximately
+    # Prices are specific for LSD per 6 meters and the change every 3 months approximately
     outer_frame_price = 6.6
-    inner_frame_price = 1.2
+    inner_frame_price = 4.7
     louver_price = 4.8
     pipe_price = 1.6
     space_bar_price = 1.8
 
-    # Calculations for: outer & inner frames, space bar, and pipe
+    # Calculations for: outer & inner frames, space bar, powder time, and pipe
 
     n_inner_frames = n_slots - 1
     inner_frame_thickness = 1.2
@@ -90,7 +90,7 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, product_count, current_w
 
     material_cost = (((space_bar_size * space_bar_price) + (inner_frame_size * inner_frame_price) +
                      (outer_frame_size * outer_frame_price) + (louver_size * louver_price) +
-                     (pipe_size * pipe_price)) / 1000)
+                     (pipe_size * pipe_price)) / 1000) + (powder_weight * POWDER_PRICE_PER_KG)
 
     labor_cost = material_cost * 0.4 + powder_time
 
@@ -129,28 +129,30 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, product_count, current_w
     invoice_sheet.cell(row=invoice_index, column=2).value = PRODUCT_CODES["Linear Slot Diffuser at 45Deg Angle"]
     invoice_sheet.cell(row=invoice_index, column=3).value = "Linear Slot Diffuser at 45Deg Angle"
     invoice_sheet.cell(row=invoice_index, column=7).value = lsd_length
-    invoice_sheet.cell(row=invoice_index, column=8).value = 1
+    invoice_sheet.cell(row=invoice_index, column=8).value = quantity
     invoice_sheet.cell(row=invoice_index, column=12).value = unit_price
     invoice_sheet.cell(row=invoice_index, column=13).value = unit_price - (unit_price * discount / 100)
-    invoice_sheet.cell(row=invoice_index, column=14).value = unit_price * 1
+    invoice_sheet.cell(row=invoice_index, column=14).value = unit_price * quantity
 
+    # TODO: divide the price calculation for each material by 1k
     report_sheet.cell(row=report_index, column=1).value = "LSD_45^"
-    report_sheet.cell(row=report_index, column=2).value = str(round(total_cost, 2)) + "SAR"
-    report_sheet.cell(row=report_index, column=3).value = str(round(material_cost, 2)) + "SAR"
-    report_sheet.cell(row=report_index, column=4).value = str(round(labor_cost, 2)) + "SAR"
-    report_sheet.cell(row=report_index, column=5).value = str(round(overhead_cost)) + "SAR"
-    report_sheet.cell(row=report_index, column=6).value = str(outer_frame_size) + "mm"
-    report_sheet.cell(row=report_index, column=7).value = str(outer_frame_price * outer_frame_size) + "SAR"
-    report_sheet.cell(row=report_index, column=8).value = str(inner_frame_size) + "mm"
-    report_sheet.cell(row=report_index, column=9).value = str(inner_frame_price * inner_frame_size) + "SAR"
-    report_sheet.cell(row=report_index, column=10).value = str(louver_size) + "mm"
-    report_sheet.cell(row=report_index, column=11).value = str(louver_price * louver_size) + "mm"
-    report_sheet.cell(row=report_index, column=12).value = str(pipe_size) + "mm"
-    report_sheet.cell(row=report_index, column=13).value = str(pipe_price * pipe_size) + "SAR"
-    report_sheet.cell(row=report_index, column=14).value = str(space_bar_size) + "mm"
-    report_sheet.cell(row=report_index, column=15).value = str(space_bar_price * space_bar_size) + "SAR"
-    report_sheet.cell(row=report_index, column=16).value = str(round(powder_weight, 2)) + "kg"
-    report_sheet.cell(row=report_index, column=17).value = str(round(powder_weight, 2) * POWDER_PRICE_PER_KG) + "SAR"
+    report_sheet.cell(row=report_index, column=2).value = quantity
+    report_sheet.cell(row=report_index, column=3).value = str(round(total_cost, 2) * quantity) + "SAR"
+    report_sheet.cell(row=report_index, column=4).value = str(round(material_cost, 2)) + "SAR"
+    report_sheet.cell(row=report_index, column=5).value = str(round(labor_cost, 2)) + "SAR"
+    report_sheet.cell(row=report_index, column=6).value = str(round(overhead_cost)) + "SAR"
+    report_sheet.cell(row=report_index, column=7).value = str(outer_frame_size) + "mm"
+    report_sheet.cell(row=report_index, column=8).value = str(outer_frame_price * outer_frame_size) + "SAR"
+    report_sheet.cell(row=report_index, column=9).value = str(inner_frame_size) + "mm"
+    report_sheet.cell(row=report_index, column=10).value = str(inner_frame_price * inner_frame_size) + "SAR"
+    report_sheet.cell(row=report_index, column=11).value = str(louver_size) + "mm"
+    report_sheet.cell(row=report_index, column=12).value = str(louver_price * louver_size) + "mm"
+    report_sheet.cell(row=report_index, column=13).value = str(pipe_size) + "mm"
+    report_sheet.cell(row=report_index, column=14).value = str(pipe_price * pipe_size) + "SAR"
+    report_sheet.cell(row=report_index, column=15).value = str(space_bar_size) + "mm"
+    report_sheet.cell(row=report_index, column=16).value = str(space_bar_price * space_bar_size) + "SAR"
+    report_sheet.cell(row=report_index, column=17).value = str(round(powder_weight, 2)) + "kg"
+    report_sheet.cell(row=report_index, column=18).value = str(round(powder_weight, 2) * POWDER_PRICE_PER_KG) + "SAR"
 
     try:
         if (input("Product Added.\nDo you wish to add another product? (y: yes, anything else: exit): ")
@@ -161,11 +163,12 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, product_count, current_w
                 print(product_name + " --> " + PRODUCT_CODES[product_name])
 
             code = input("\nEnter Product Code: ")
+            quantity = int(input("Enter Quantity: "))
 
             if code not in PRODUCT_CODES.values():
                 raise ValueError
 
-            add_product(code, discount, product_count=product_count+1, current_workbooks=(invoice, report))
+            add_product(code, discount, quantity, product_count=product_count+1, current_workbooks=(invoice, report))
 
         else:
 
