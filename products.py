@@ -142,17 +142,17 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, quantity, product_count,
     report_sheet.cell(row=report_index, column=5).value = str(round(labor_cost, 2)) + "SAR"
     report_sheet.cell(row=report_index, column=6).value = str(round(overhead_cost)) + "SAR"
     report_sheet.cell(row=report_index, column=7).value = str(outer_frame_size) + "mm"
-    report_sheet.cell(row=report_index, column=8).value = str(outer_frame_price * outer_frame_size) + "SAR"
+    report_sheet.cell(row=report_index, column=8).value = str(outer_frame_price * outer_frame_size / 1000) + "SAR"
     report_sheet.cell(row=report_index, column=9).value = str(inner_frame_size) + "mm"
-    report_sheet.cell(row=report_index, column=10).value = str(inner_frame_price * inner_frame_size) + "SAR"
+    report_sheet.cell(row=report_index, column=10).value = str(inner_frame_price * inner_frame_size / 1000) + "SAR"
     report_sheet.cell(row=report_index, column=11).value = str(louver_size) + "mm"
-    report_sheet.cell(row=report_index, column=12).value = str(louver_price * louver_size) + "mm"
+    report_sheet.cell(row=report_index, column=12).value = str(louver_price * louver_size / 1000) + "SAR"
     report_sheet.cell(row=report_index, column=13).value = str(pipe_size) + "mm"
-    report_sheet.cell(row=report_index, column=14).value = str(pipe_price * pipe_size) + "SAR"
+    report_sheet.cell(row=report_index, column=14).value = str(pipe_price * pipe_size / 1000) + "SAR"
     report_sheet.cell(row=report_index, column=15).value = str(space_bar_size) + "mm"
-    report_sheet.cell(row=report_index, column=16).value = str(space_bar_price * space_bar_size) + "SAR"
+    report_sheet.cell(row=report_index, column=16).value = str(space_bar_price * space_bar_size / 1000) + "SAR"
     report_sheet.cell(row=report_index, column=17).value = str(round(powder_weight, 2)) + "kg"
-    report_sheet.cell(row=report_index, column=18).value = str(round(powder_weight, 2) * POWDER_PRICE_PER_KG) + "SAR"
+    report_sheet.cell(row=report_index, column=18).value = str(round(powder_weight, 2) * POWDER_PRICE_PER_KG / 1000) + "SAR"
 
     try:
         if (input("Product Added.\nDo you wish to add another product? (y: yes, anything else: exit): ")
