@@ -23,6 +23,7 @@ def add_product(code, discount_inputted, quantity=1,  product_count=1, current_w
     global discount
     discount = discount_inputted
 
+    # Call product function based on code entered
     try:
         if code == "LSD45^":
 
@@ -55,12 +56,12 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, quantity, product_count,
     :param gap_size: float representing the size of the gap in millimeters
     :param lsd_length: float representing the length of the linear slot diffuser in millimeters
     :param quantity: integer representing the quantity of LSDs required
-    :param current_workbooks: a tuple containing two openpyxl workbooks each representing a report file to be saved
     :param product_count: an integer representing the number of products entered so far
+    :param current_workbooks: a tuple containing two openpyxl workbooks each representing a report file to be saved
     :return:
     """
 
-    # Prices are specific for LSD per 6 meters and the change every 3 months approximately
+    # Prices that are specific for LSD per 6 meters and the change around every 3 months
     outer_frame_price = 6.6
     inner_frame_price = 4.7
     louver_price = 4.8
@@ -101,6 +102,7 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, quantity, product_count,
     unit_price = material_cost * 4
     unit_price *= 0.3
 
+    # Creates report openpyxl file
     if current_workbooks is None:
         invoice = openpyxl.load_workbook("customer template.xlsx")
         report = openpyxl.load_workbook("material template.xlsx")
@@ -124,8 +126,7 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, quantity, product_count,
         invoice.save("Invoice.xlsx")
         exit(0)
 
-    # Entering the data into the right row, notice that the 1's represent the quantity and should be updated
-    # to whatever value that ends up taking on
+    # Writes data to the Invoice and Report sheets
     invoice_sheet.cell(row=invoice_index, column=2).value = PRODUCT_CODES["Linear Slot Diffuser at 45Deg Angle"]
     invoice_sheet.cell(row=invoice_index, column=3).value = "Linear Slot Diffuser at 45Deg Angle"
     invoice_sheet.cell(row=invoice_index, column=7).value = lsd_length
@@ -134,7 +135,6 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, quantity, product_count,
     invoice_sheet.cell(row=invoice_index, column=13).value = unit_price - (unit_price * discount / 100)
     invoice_sheet.cell(row=invoice_index, column=14).value = unit_price * quantity
 
-    # TODO: divide the price calculation for each material by 1k
     report_sheet.cell(row=report_index, column=1).value = "LSD_45^"
     report_sheet.cell(row=report_index, column=2).value = quantity
     report_sheet.cell(row=report_index, column=3).value = str(round(total_cost, 2) * quantity) + "SAR"
@@ -154,6 +154,7 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, quantity, product_count,
     report_sheet.cell(row=report_index, column=17).value = str(round(powder_weight, 2)) + "kg"
     report_sheet.cell(row=report_index, column=18).value = str(round(powder_weight, 2) * POWDER_PRICE_PER_KG / 1000) + "SAR"
 
+    # Ask for another product and act accordingly
     try:
         if (input("Product Added.\nDo you wish to add another product? (y: yes, anything else: exit): ")
                 .lower() in ["y", "yes"]):
@@ -182,8 +183,3 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, quantity, product_count,
         invoice.save("Invoice.xlsx")
         print("Invalid value entered\nOutput file saved. Process terminated.")
         exit(1)
-
-    # Calculates the primary cost and returns it alongside the product description.
-    # prim_cost = direct_material + direct_labor + overhead
-    # Calculates the customer cost which is for now prim_cost + 0.25 * prim_cost.
-    # Ask for discount percentage to apply if any.
