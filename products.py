@@ -69,7 +69,6 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, quantity, product_count,
     space_bar_price = 1.8
 
     # Calculations for: outer & inner frames, space bar, powder time, and pipe
-
     n_inner_frames = n_slots - 1
     inner_frame_thickness = 1.2
     outer_frame_thickness = 4.4
@@ -152,11 +151,12 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, quantity, product_count,
     report_sheet.cell(row=report_index, column=15).value = str(space_bar_size) + "mm"
     report_sheet.cell(row=report_index, column=16).value = str(space_bar_price * space_bar_size / 1000) + "SAR"
     report_sheet.cell(row=report_index, column=17).value = str(round(powder_weight, 2)) + "kg"
-    report_sheet.cell(row=report_index, column=18).value = str(round(powder_weight, 2) * POWDER_PRICE_PER_KG / 1000) + "SAR"
+    report_sheet.cell(row=report_index, column=18).value = (str(round(powder_weight, 2) * POWDER_PRICE_PER_KG / 1000) +
+                                                            "SAR")
 
     # Ask for another product and act accordingly
     try:
-        if (input("Product Added.\nDo you wish to add another product? (y: yes, anything else: exit): ")
+        if (input("Product Added.\nDo you wish to add another product to your invoice? (yes: y, exit program: enter): ")
                 .lower() in ["y", "yes"]):
             print("PRODUCT --> PRODUCT_CODE:\n")
 
@@ -173,7 +173,7 @@ def linear_slot_diffuser(n_slots, gap_size, lsd_length, quantity, product_count,
 
         else:
 
-            print("Saving output file and terminating process")
+            print("Saving output files and terminating process")
             report.save("Internal Report.xlsx")
             invoice.save("Invoice.xlsx")
             exit(0)
