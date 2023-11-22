@@ -50,7 +50,8 @@ def add_product(code, discount_inputted, quantity=1,  product_count=1, current_w
 
 def linear_slot_diffuser(n_slots, lsd_width, lsd_length, quantity, product_count, current_workbooks):
     """
-    Calculates the costs of production for the Linear Slot Diffuser and exports it into an Excel file.
+    Calculates the costs of production for the Linear Slot Diffuser and adds it to the invoice and internal report
+    Excel files.
     :param n_slots: integer representing the number of slots
     :param lsd_width: float representing the size of the gap in millimeters
     :param lsd_length: float representing the length of the linear slot diffuser in millimeters
@@ -79,11 +80,10 @@ def linear_slot_diffuser(n_slots, lsd_width, lsd_length, quantity, product_count
     pipe_size = n_pipes * end_cap_size
 
     space_bar_amount = lsd_length / 350 * end_cap_size - 5
-    n_space_bars = pipe_size - 5
+    n_space_bars = round(pipe_size - 5)
     outer_frame_size = lsd_length * 2 + end_cap_size * 2 + 380
     inner_frame_size = n_inner_frames * lsd_length
 
-    hanging_clamp_price = 0
     n_hanging_clamps = int(lsd_length / 400)
 
     if n_slots == 1:
@@ -97,8 +97,7 @@ def linear_slot_diffuser(n_slots, lsd_width, lsd_length, quantity, product_count
     else:
         hanging_clamp_price = 0.6
 
-    n_aluminum_straps = round((lsd_length / 2400) * 2)
-    aluminum_strap_price = 0
+    n_aluminum_straps = round((lsd_length * 3 / 2400) * 2)
     aluminum_strap_type = ""
 
     if lsd_width == 16:
@@ -109,7 +108,7 @@ def linear_slot_diffuser(n_slots, lsd_width, lsd_length, quantity, product_count
         aluminum_strap_price = 4.54545445
         aluminum_strap_type += "strap_36"
 
-    elif lsd_width == 25:
+    else:
         aluminum_strap_price = 5
         aluminum_strap_type += "strap_40"
 
@@ -138,6 +137,8 @@ def linear_slot_diffuser(n_slots, lsd_width, lsd_length, quantity, product_count
     unit_price = material_cost * 4
     unit_price *= 0.3
 
+    # Load the invoice and report workbooks or assign them if they're already loaded
+
     if current_workbooks is None:
         invoice = openpyxl.load_workbook("customer template.xlsx")
         report = openpyxl.load_workbook("material template.xlsx")
@@ -149,8 +150,10 @@ def linear_slot_diffuser(n_slots, lsd_width, lsd_length, quantity, product_count
     report_sheet = report.active
     invoice_sheet = invoice.active
 
-    # Add discount percentage to the invoice
+    # Add discount percentage to it's appropriate location in invoice sheet
     invoice_sheet.cell(row=31, column=16).value = str(discount) + "%"
+
+    # Assign starting indices for Excel and add product
 
     invoice_index = product_count + 18
     report_index = product_count + 2
@@ -161,8 +164,6 @@ def linear_slot_diffuser(n_slots, lsd_width, lsd_length, quantity, product_count
         invoice.save("Invoice.xlsx")
         exit(0)
 
-    # Entering the data into the right row, notice that the 1's represent the quantity and should be updated
-    # to whatever value that ends up taking on
     invoice_sheet.cell(row=invoice_index, column=2).value = PRODUCT_CODES["Linear Slot Diffuser at 45Deg Angle"]
     invoice_sheet.cell(row=invoice_index, column=3).value = "Linear Slot Diffuser at 45Deg Angle"
     invoice_sheet.cell(row=invoice_index, column=7).value = lsd_length
@@ -180,23 +181,33 @@ def linear_slot_diffuser(n_slots, lsd_width, lsd_length, quantity, product_count
     report_sheet.cell(row=report_index, column=7).value = str(round(labor_cost, 2) * quantity) + "SAR"
     report_sheet.cell(row=report_index, column=8).value = str(round(overhead_cost, 2) * quantity) + "SAR"
     report_sheet.cell(row=report_index, column=9).value = str(round(outer_frame_size, 2) * quantity) + "mm"
-    report_sheet.cell(row=report_index, column=10).value = str(round(outer_frame_price * outer_frame_size / 1000, 2) * quantity) + "SAR"
+    report_sheet.cell(row=report_index, column=10).value = str(round(outer_frame_price * outer_frame_size / 1000, 2)
+                                                               * quantity) + "SAR"
     report_sheet.cell(row=report_index, column=11).value = str(round(inner_frame_size, 2) * quantity) + "mm"
-    report_sheet.cell(row=report_index, column=12).value = str(round(inner_frame_price * inner_frame_size / 1000, 2) * quantity) + "SAR"
+    report_sheet.cell(row=report_index, column=12).value = str(round(inner_frame_price * inner_frame_size / 1000, 2)
+                                                               * quantity) + "SAR"
     report_sheet.cell(row=report_index, column=13).value = str(round(louver_size, 2) * quantity) + "mm"
-    report_sheet.cell(row=report_index, column=14).value = str(round(louver_price * louver_size / 1000, 2) * quantity) + "SAR"
+    report_sheet.cell(row=report_index, column=14).value = (str(round(louver_price * louver_size / 1000, 2) * quantity)
+                                                            + "SAR")
     report_sheet.cell(row=report_index, column=15).value = str(round(pipe_size, 2) * quantity) + "mm"
-    report_sheet.cell(row=report_index, column=16).value = str(round(pipe_price * pipe_size / 1000, 2) * quantity) + "SAR"
+    report_sheet.cell(row=report_index, column=16).value = (str(round(pipe_price * pipe_size / 1000, 2) * quantity)
+                                                            + "SAR")
     report_sheet.cell(row=report_index, column=17).value = str(round(space_bar_amount, 2) * quantity) + "mm"
-    report_sheet.cell(row=report_index, column=18).value = str(round(space_bar_price * space_bar_amount / 1000, 2) * quantity) + "SAR"
-    report_sheet.cell(row=report_index, column=19).value = str(round(powder_weight, 2) * quantity) + "kg"
-    report_sheet.cell(row=report_index, column=20).value = str(round(powder_weight * POWDER_PRICE_PER_KG / 1000, 2) * quantity) + "SAR"
-    report_sheet.cell(row=report_index, column=21).value = str(n_hanging_clamps * quantity) + "clamps"
-    report_sheet.cell(row=report_index, column=22).value = str(round(n_hanging_clamps * hanging_clamp_price, 2) * quantity) + "SAR"
-    report_sheet.cell(row=report_index, column=23).value = aluminum_strap_type
-    report_sheet.cell(row=report_index, column=24).value = str(n_aluminum_straps * quantity) + "straps"
-    report_sheet.cell(row=report_index, column=25).value = str(round(n_aluminum_straps * aluminum_strap_price, 2) * quantity) + "SAR"
+    report_sheet.cell(row=report_index, column=18).value = str(n_space_bars)
+    report_sheet.cell(row=report_index, column=19).value = str(round(space_bar_price * space_bar_amount / 1000, 2)
+                                                               * quantity) + "SAR"
+    report_sheet.cell(row=report_index, column=20).value = str(round(powder_weight, 2) * quantity) + "kg"
+    report_sheet.cell(row=report_index, column=21).value = str(round(powder_weight * POWDER_PRICE_PER_KG / 1000, 2)
+                                                               * quantity) + "SAR"
+    report_sheet.cell(row=report_index, column=22).value = str(n_hanging_clamps * quantity)
+    report_sheet.cell(row=report_index, column=23).value = str(round(n_hanging_clamps * hanging_clamp_price, 2)
+                                                               * quantity) + "SAR"
+    report_sheet.cell(row=report_index, column=24).value = aluminum_strap_type
+    report_sheet.cell(row=report_index, column=25).value = str(n_aluminum_straps * quantity)
+    report_sheet.cell(row=report_index, column=26).value = str(round(n_aluminum_straps * aluminum_strap_price, 2)
+                                                               * quantity) + "SAR"
 
+    # Check to add other products & calls add_product or saves report & invoice respectively
 
     try:
         if (input("Product Added.\nDo you wish to add another product? (y: yes, anything else: exit): ")
