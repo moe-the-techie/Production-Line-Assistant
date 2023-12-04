@@ -109,7 +109,7 @@ def linear_slot_diffuser(n_slots, lsd_width, lsd_length, quantity, product_count
     else:
         hanging_clamp_price = 0.6
 
-    n_aluminum_straps = round((lsd_length / 2400) * 2)
+    n_aluminum_straps = round((lsd_length * 3 / 2400) * 2)
     aluminum_strap_price = 0
     aluminum_strap_type = ""
 
